@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="Log_Path">/hms/logs/demo</Property>
+        <Property name="default-log-pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level%x %c{1} [%t] - %msg%n</Property>
+        <Property name="audit-log-pattern">%msg%n</Property>
+        <Property name="hourly-log-rotate-pattern">.log.%d{yyyy-MM-dd-HH}</Property>
+        <Property name="daily-log-rotate-pattern">.log.%d{yyyy-MM-dd}</Property>
+    </Properties>
+    <Appenders>
+        <Console name="consoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="${default-log-pattern}"/>
+        </Console>
+        <RollingRandomAccessFile name="debugAppender" fileName="${Log_Path}/demo-debug.log"
+                                 filePattern="${log-path}/error${hourly-log-rotate-pattern}">
+            <PatternLayout pattern="${default-log-pattern}"/>
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingRandomAccessFile>
+        <RollingRandomAccessFile name="errorAppender" fileName="${Log_Path}/demo-error.log"
+                                 filePattern="${log-path}/error${daily-log-rotate-pattern}">
+            <PatternLayout pattern="${default-log-pattern}"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingRandomAccessFile>
+        <RollingRandomAccessFile name="auditAppender" fileName="${Log_Path}/demo-audit.log"
+                                 filePattern="${log-path}/error${daily-log-rotate-pattern}">
+            <PatternLayout pattern="${audit-log-pattern}"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="AUDIT_LOG" level="info" additivity="false">
+            <appender-ref ref="auditAppender"/>
+        </Logger>
+        <Root level="debug">
+            <appender-ref ref="debugAppender"/>
+            <appender-ref ref="errorAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
