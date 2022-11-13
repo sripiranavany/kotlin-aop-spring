@@ -1,5 +1,6 @@
 package com.example.demo.aop
 
+import com.example.demo.model.Product
 import com.example.demo.util.IdGenerator
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -51,15 +52,14 @@ class LogAspect {
         }
     }
 
-    @Around(value = "com.example.demo.aop.AppPointCuts.controllerPointCut()")
-    fun auditLogging(jointPoint: ProceedingJoinPoint): Any {
+    @Around(value = "com.example.demo.aop.AppPointCuts.controllerPointCut() && args(parameters)")
+    fun auditLogging(jointPoint: ProceedingJoinPoint, parameters: Product): Any {
         try {
             val auditLogger: Logger = LoggerFactory.getLogger("AUDIT_LOG")
             val correlationId: Long = IdGenerator().generateId()
             val currentDateTime: Timestamp = Timestamp(System.currentTimeMillis())
-            val args = jointPoint.args
-            val productName: String = "biscuit"
-            val productPrice: Double = 10.4
+            val productName: String = parameters.productName!!
+            val productPrice: Double = parameters.productPrice!!
             val action: String = (jointPoint.signature as MethodSignature).method.name
 
             val message: AuditLoggerMessage =

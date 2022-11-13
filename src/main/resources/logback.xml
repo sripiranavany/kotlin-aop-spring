@@ -62,7 +62,8 @@
     <logger name="AUDIT_LOG" level="INFO" additivity="false">
         <appender-ref ref="audit-log-appender"/>
     </logger>
-    <root level="DEBUG">
+    <root level="DEBUG" additivity="false">
         <appender-ref ref="debug-appender"/>
+        <appender-ref ref="error-appender"/>
     </root>
 </configuration>
