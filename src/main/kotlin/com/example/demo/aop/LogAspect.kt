@@ -2,6 +2,7 @@ package com.example.demo.aop
 
 import com.example.demo.model.Product
 import com.example.demo.util.IdGenerator
+import com.google.gson.Gson
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -55,18 +56,21 @@ class LogAspect {
     @Around(value = "com.example.demo.aop.AppPointCuts.controllerPointCut() && args(parameters)")
     fun auditLogging(jointPoint: ProceedingJoinPoint, parameters: Product): Any {
         try {
+            val gson = Gson()
             val auditLogger: Logger = LoggerFactory.getLogger("AUDIT_LOG")
             val correlationId: Long = IdGenerator().generateId()
             val currentDateTime: Timestamp = Timestamp(System.currentTimeMillis())
             val productName: String = parameters.productName!!
             val productPrice: Double = parameters.productPrice!!
             val action: String = (jointPoint.signature as MethodSignature).method.name
-
-            val message: AuditLoggerMessage =
-                AuditLoggerMessage(correlationId, currentDateTime, productName, productPrice, action)
-
-            auditLogger.info("{}", message)
-            return jointPoint.proceed()
+            val result = jointPoint.proceed()
+            val check = gson.fromJson(gson.toJson(result), AopResponse::class.java)
+            if (check.status == "OK") {
+                val message: AuditLoggerMessage =
+                    AuditLoggerMessage(correlationId, currentDateTime, productName, productPrice, action)
+                auditLogger.info("{}", message)
+            }
+            return result
         } catch (e: Exception) {
             logger.error("An Error Occurred ", e)
             throw e
